@@ -1,0 +1,11 @@
+*.suo
+
+_bin/
+[Bb]in/
+[Oo]bj/
+
+*.*.user
+_ReSharper*/
+/TestResults/
+
+/packages/
