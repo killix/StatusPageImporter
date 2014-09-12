@@ -35,12 +35,15 @@ namespace StatusPageImporter
 					var record = new IncidentRecord { Message = item.ToString() };
 					records.Add(record);
 
-					var text = item.ToString();
-					text = text.Replace("\r", "\\r").Replace("\n", "\\n").Replace("\"", "\\\"");
+					var timeText = item["created_at"].ToString();
+					var time = DateTime.Parse(timeText);
+
+					var text = record.Message;
+					text = text.Replace("\r", "").Replace("\n", "").Replace("\t", "  ");
 
 					var message = string.Format(
-						"{{\"timestamp\":\"{0}\",\"message\":\"{1}\",\"source\":\"StatusPage\"}}\r\n",
-						DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.fffZ"), text);
+						"{{\"@timestamp\":\"{0}\",\"message\":{1},\"source\":\"StatusPage\",\"version\":\"2\"}}\r\n",
+						time.ToString("yyyy-MM-ddTHH:mm:ss.fffZ"), text);
 					File.AppendAllText(dataPath + "\\log.txt", message);
 				}
 
