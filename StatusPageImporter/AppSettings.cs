@@ -10,6 +10,7 @@ namespace StatusPageImporter
 	{
 		public static string BaseUrl { get { return Read("BaseUrl"); } }
 		public static string ApiKey { get { return Read("ApiKey"); } }
+		public static string EsServerUrl { get { return Read("EsServerUrl"); } }
 
 		static string Read(string name)
 		{

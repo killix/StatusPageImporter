@@ -8,6 +8,11 @@ namespace StatusPageImporter
 	class IncidentRecord
 	{
 		public string Message;
-		public string Type = "StatusPage";
+		public DateTime Time;
+
+		public override string ToString()
+		{
+			return Time.ToString();
+		}
 	}
 }
