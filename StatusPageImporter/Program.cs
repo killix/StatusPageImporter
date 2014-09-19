@@ -5,24 +5,30 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
+using System.Threading;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace StatusPageImporter
 {
-	class Program
+	static class Program
 	{
-		static void Main(string[] args)
+		static void Main()
 		{
-			try
+			while (true)
 			{
-				ShipData();
-			}
-			catch (Exception exc)
-			{
-				Console.WriteLine(exc);
-				if (Debugger.IsAttached)
-					Debugger.Break();
+				try
+				{
+					ShipData();
+				}
+				catch (Exception exc)
+				{
+					Console.WriteLine(DateTime.UtcNow.ToString() + exc);
+					if (Debugger.IsAttached)
+						Debugger.Break();
+				}
+
+				Thread.Sleep(TimeSpan.FromMinutes(10));
 			}
 		}
 
@@ -63,6 +69,8 @@ namespace StatusPageImporter
 					record.Time.ToString("yyyy-MM-ddTHH:mm:ss.fffZ"), text);
 				File.AppendAllText(dataPath + "\\log.txt", message);
 			}
+
+			Console.WriteLine(DateTime.UtcNow + ": shipped data successfully ({0} records)", records.Count);
 		}
 
 		private static string Init()
