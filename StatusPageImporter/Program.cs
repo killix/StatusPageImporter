@@ -16,14 +16,7 @@ namespace StatusPageImporter
 		{
 			try
 			{
-				var dataPath = @"..\_data";
-				if (!Directory.Exists(dataPath))
-					Directory.CreateDirectory(dataPath);
-
-				foreach (var file in Directory.GetFiles(dataPath))
-				{
-					File.Delete(file);
-				}
+				var dataPath = Init();
 
 				var lastShippedRecord = GetLastRecords();
 
@@ -65,6 +58,20 @@ namespace StatusPageImporter
 				if (Debugger.IsAttached)
 					Debugger.Break();
 			}
+		}
+
+		private static string Init()
+		{
+			var dataPath = @"..\_data";
+			if (!Directory.Exists(dataPath))
+				Directory.CreateDirectory(dataPath);
+
+			foreach (var file in Directory.GetFiles(dataPath))
+			{
+				File.Delete(file);
+			}
+
+			return dataPath;
 		}
 
 		static IncidentRecord GetLastRecords()
