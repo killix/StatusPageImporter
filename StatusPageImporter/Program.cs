@@ -16,47 +16,52 @@ namespace StatusPageImporter
 		{
 			try
 			{
-				var dataPath = Init();
-
-				var lastShippedRecord = GetLastRecords();
-
-				var baseUrl = AppSettings.BaseUrl;
-				var response = HttpUtil.Request(baseUrl + "incidents.json?api_key=" + AppSettings.ApiKey);
-				var data = (JArray)JsonConvert.DeserializeObject(response);
-
-				var records = new List<IncidentRecord>();
-				foreach (var item in data)
-				{
-					var timeText = item["created_at"].ToString();
-
-					var record = new IncidentRecord
-						{
-							Time = DateTime.Parse(timeText),
-							Message = item.ToString(),
-						};
-
-					if (lastShippedRecord != null && record.Time <= lastShippedRecord.Time)
-						continue;
-
-					records.Add(record);
-				}
-
-				foreach (var record in records)
-				{
-					var text = record.Message;
-					text = text.Replace("\r", "").Replace("\n", "").Replace("\t", "  ");
-
-					var message = String.Format(
-						"{{\"@timestamp\":\"{0}\",\"message\":{1},\"source\":\"StatusPage\",\"version\":\"2\"}}\r\n",
-						record.Time.ToString("yyyy-MM-ddTHH:mm:ss.fffZ"), text);
-					File.AppendAllText(dataPath + "\\log.txt", message);
-				}
+				ShipData();
 			}
 			catch (Exception exc)
 			{
 				Console.WriteLine(exc);
 				if (Debugger.IsAttached)
 					Debugger.Break();
+			}
+		}
+
+		static void ShipData()
+		{
+			var dataPath = Init();
+
+			var lastShippedRecord = GetLastRecords();
+
+			var baseUrl = AppSettings.BaseUrl;
+			var response = HttpUtil.Request(baseUrl + "incidents.json?api_key=" + AppSettings.ApiKey);
+			var data = (JArray)JsonConvert.DeserializeObject(response);
+
+			var records = new List<IncidentRecord>();
+			foreach (var item in data)
+			{
+				var timeText = item["created_at"].ToString();
+
+				var record = new IncidentRecord
+				{
+					Time = DateTime.Parse(timeText),
+					Message = item.ToString(),
+				};
+
+				if (lastShippedRecord != null && record.Time <= lastShippedRecord.Time)
+					continue;
+
+				records.Add(record);
+			}
+
+			foreach (var record in records)
+			{
+				var text = record.Message;
+				text = text.Replace("\r", "").Replace("\n", "").Replace("\t", "  ");
+
+				var message = String.Format(
+					"{{\"@timestamp\":\"{0}\",\"message\":{1},\"source\":\"StatusPage\",\"version\":\"2\"}}\r\n",
+					record.Time.ToString("yyyy-MM-ddTHH:mm:ss.fffZ"), text);
+				File.AppendAllText(dataPath + "\\log.txt", message);
 			}
 		}
 
