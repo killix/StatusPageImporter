@@ -16,10 +16,6 @@ namespace StatusPageImporter
 		{
 			try
 			{
-				var baseUrl = AppSettings.BaseUrl;
-				var response = HttpUtil.Request(baseUrl + "incidents.json?api_key=" + AppSettings.ApiKey);
-				var data = (JArray)JsonConvert.DeserializeObject(response);
-
 				var dataPath = @"..\_data";
 				if (!Directory.Exists(dataPath))
 					Directory.CreateDirectory(dataPath);
@@ -28,6 +24,12 @@ namespace StatusPageImporter
 				{
 					File.Delete(file);
 				}
+
+				var lastShippedRecords = GetLastRecords();
+
+				var baseUrl = AppSettings.BaseUrl;
+				var response = HttpUtil.Request(baseUrl + "incidents.json?api_key=" + AppSettings.ApiKey);
+				var data = (JArray)JsonConvert.DeserializeObject(response);
 
 				var records = new List<IncidentRecord>();
 				foreach (var item in data)
@@ -41,7 +43,7 @@ namespace StatusPageImporter
 					var text = record.Message;
 					text = text.Replace("\r", "").Replace("\n", "").Replace("\t", "  ");
 
-					var message = string.Format(
+					var message = String.Format(
 						"{{\"@timestamp\":\"{0}\",\"message\":{1},\"source\":\"StatusPage\",\"version\":\"2\"}}\r\n",
 						time.ToString("yyyy-MM-ddTHH:mm:ss.fffZ"), text);
 					File.AppendAllText(dataPath + "\\log.txt", message);
@@ -54,6 +56,26 @@ namespace StatusPageImporter
 				if (Debugger.IsAttached)
 					Debugger.Break();
 			}
+		}
+
+		static IncidentRecord GetLastRecords()
+		{
+			var endTime = DateTime.UtcNow;
+			var startTime = endTime - TimeSpan.FromDays(30);
+			var curDay = endTime.Date;
+
+			while (curDay >= startTime.Date)
+			{
+				var indexName = EsUtil.GetIndexName(curDay);
+
+				var records = EsUtil.GetRecords(indexName);
+				if (records.Count > 0)
+					return records.Last();
+
+				curDay = curDay.AddDays(-1);
+			}
+
+			return null;
 		}
 	}
 }

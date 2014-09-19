@@ -12,32 +12,13 @@ namespace StatusPageImporter
 {
 	static class EsUtil
 	{
-		public static List<IncidentRecord> GetRecords()
-		{
-			var indexNames = new List<string>();
-			var endTime = DateTime.UtcNow;
-			var startTime = endTime - TimeSpan.FromDays(30);
-			var curDay = startTime.Date;
-			while (curDay <= endTime.Date)
-			{
-				var indexName = GetIndexName(curDay);
-				indexNames.Add(indexName);
-				curDay = curDay.AddDays(1);
-			}
-
-			var indexNamesText = string.Join(",", indexNames);
-
-			var records = GetRecords(indexNamesText);
-			return records;
-		}
-
-		private static string GetIndexName(DateTime day)
+		public static string GetIndexName(DateTime day)
 		{
 			var indexName = "logstash-" + day.ToString("yyyy.MM.dd");
 			return indexName;
 		}
 
-		private static List<IncidentRecord> GetRecords(string indexNames)
+		public static List<IncidentRecord> GetRecords(string indexNames)
 		{
 			var records = new List<IncidentRecord>();
 
