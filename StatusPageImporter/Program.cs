@@ -25,7 +25,7 @@ namespace StatusPageImporter
 					File.Delete(file);
 				}
 
-				var lastShippedRecords = GetLastRecords();
+				var lastShippedRecord = GetLastRecords();
 
 				var baseUrl = AppSettings.BaseUrl;
 				var response = HttpUtil.Request(baseUrl + "incidents.json?api_key=" + AppSettings.ApiKey);
@@ -34,21 +34,30 @@ namespace StatusPageImporter
 				var records = new List<IncidentRecord>();
 				foreach (var item in data)
 				{
-					var record = new IncidentRecord { Message = item.ToString() };
-					records.Add(record);
-
 					var timeText = item["created_at"].ToString();
-					var time = DateTime.Parse(timeText);
 
+					var record = new IncidentRecord
+						{
+							Time = DateTime.Parse(timeText),
+							Message = item.ToString(),
+						};
+
+					if (lastShippedRecord != null && record.Time <= lastShippedRecord.Time)
+						continue;
+
+					records.Add(record);
+				}
+
+				foreach (var record in records)
+				{
 					var text = record.Message;
 					text = text.Replace("\r", "").Replace("\n", "").Replace("\t", "  ");
 
 					var message = String.Format(
 						"{{\"@timestamp\":\"{0}\",\"message\":{1},\"source\":\"StatusPage\",\"version\":\"2\"}}\r\n",
-						time.ToString("yyyy-MM-ddTHH:mm:ss.fffZ"), text);
+						record.Time.ToString("yyyy-MM-ddTHH:mm:ss.fffZ"), text);
 					File.AppendAllText(dataPath + "\\log.txt", message);
 				}
-
 			}
 			catch (Exception exc)
 			{
