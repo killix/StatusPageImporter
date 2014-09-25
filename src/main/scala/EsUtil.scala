@@ -1,15 +1,8 @@
-import org.elasticsearch.action.ActionFuture
-import org.elasticsearch.action.search.{SearchResponse, SearchRequest}
-import org.joda.time.format.DateTimeFormat
+import java.net.HttpURLConnection
+
 import org.joda.time.{DateTimeZone, DateTime}
 
-import scala.concurrent.Await
-import scala.concurrent.Future
-import scala.concurrent.duration.DurationInt
-
-import org.elasticsearch.client.Client
-import org.elasticsearch.node.NodeBuilder.nodeBuilder
-import org.scalastuff.esclient.ESClient
+import scalaj.http.{HttpOptions, Http}
 
 object EsUtil {
   def getIndexName(day: DateTime): String =
@@ -18,14 +11,26 @@ object EsUtil {
     return indexName
   }
 
-  def getRecords(indexNames: String): Array[IncidentRecord] = {
+  def getRecords(indexNames: String): Array[IncidentRecord] =
+  {
+    def requestFile = this.getClass().getResource("request.txt").getFile()
+    val source = scala.io.Source.fromFile(requestFile)
+    val requestBase = source.mkString
+    source.close()
 
-    val client = nodeBuilder.node.client
+    val requestText = requestBase.format(0)
+    var url = "http://api.cityindex.logsearch.io/%s/_search".format(indexNames);
 
-    var request = new SearchRequest()
-    val response = client.search(request)
+    val result = Http.postData(url, requestText)
+      .header("Content-Type", "application/json")
+      .header("Charset", "UTF-8")
+      .option(HttpOptions.connTimeout(10000))
+      .option(HttpOptions.readTimeout(10000))
 
-    //val res = Await.result(response, 5 seconds).id
+    if (result.responseCode != HttpURLConnection.HTTP_OK)
+      throw new Exception();
+
+    var responseText = result.asString
 
     throw new NotImplementedError()
   }

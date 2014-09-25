@@ -1,0 +1,34 @@
+{
+    "query": {
+        "filtered": {
+            "filter": {
+                "bool": {
+                    "must": [
+                        {
+                            "fquery": {
+                                "query": {
+                                    "query_string": {
+                                        "query": "@source.environment:(\"StatusPage\")"
+                                    }
+                                },
+                                "_cache": true
+                            }
+                        },
+                        {
+                            "fquery": {
+                                "query": {
+                                    "query_string": {
+                                        "query": "version:(\"2\")"
+                                    }
+                                },
+                                "_cache": true
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    },
+    "from": %s,
+    "size": 500
+}
