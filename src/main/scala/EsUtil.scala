@@ -21,7 +21,7 @@ object EsUtil {
     val requestBase = source.mkString
     source.close()
 
-    var url = "http://api.cityindex.logsearch.io/%s/_search".format(indexNames)
+    var url = Settings.esServerUrl + "/%s/_search".format(indexNames)
 
     val records = ArrayBuffer[IncidentRecord]()
 
