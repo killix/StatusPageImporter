@@ -48,7 +48,7 @@ object EsUtil {
 
       for (hit <- hits)
       {
-        println(hit.toString())
+        //println(hit.toString())
         val sourceData = hit.at("/_source")
         val timeText = sourceData.at("/@timestamp").asText()
         var record = new IncidentRecord {
