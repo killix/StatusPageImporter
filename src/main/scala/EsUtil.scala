@@ -8,14 +8,12 @@ import scala.collection.mutable.ArrayBuffer
 import scalaj.http.{HttpOptions, Http}
 
 object EsUtil {
-  def getIndexName(day: DateTime): String =
-  {
+  def getIndexName(day: DateTime): String = {
     val indexName = "logstash-" + day.withZone(DateTimeZone.UTC).toString("yyyy.MM.dd")
     return indexName
   }
 
-  def getRecords(indexNames: String): Array[IncidentRecord] =
-  {
+  def getRecords(indexNames: String): Array[IncidentRecord] = {
     def requestFile = this.getClass().getResource("request.txt").getFile()
     val source = scala.io.Source.fromFile(requestFile)
     val requestBase = source.mkString
