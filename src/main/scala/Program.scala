@@ -1,3 +1,4 @@
+import java.io.File
 import java.net.HttpURLConnection
 
 import org.joda.time.{DateTimeZone, DateTime}
@@ -21,7 +22,23 @@ object Program {
     }
   }
 
+  def Init(): String = {
+    var dataPath = new File(".").getCanonicalPath() + "\\_data"
+
+    val dataDir = new File(dataPath)
+    if (!dataDir.exists())
+      dataDir.mkdir()
+
+    for (file <- dataDir.listFiles().filter(_.isFile)) {
+      file.delete()
+    }
+
+    return dataPath
+  }
+
   def ShipData() = {
+    val dataPath = Init()
+
     var lastShippedRecord = getLastRecord()
 
     val url = Settings.statusPageBaseUrl + "incidents.json?api_key=" + Settings.statusPageApiKey
