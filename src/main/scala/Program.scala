@@ -21,7 +21,7 @@ object Program {
     }
   }
 
-  def  ShipData() = {
+  def ShipData() = {
     var lastShippedRecord = getLastRecord()
 
     val url = Settings.statusPageBaseUrl + "incidents.json?api_key=" + Settings.statusPageApiKey
