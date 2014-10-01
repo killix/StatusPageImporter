@@ -1,4 +1,4 @@
-import java.io.File
+import java.io.{FileWriter, File}
 import java.net.HttpURLConnection
 
 import org.joda.time.{DateTimeZone, DateTime}
@@ -56,8 +56,6 @@ object Program {
 
     val data = Json.parse(responseText)
     for (item <- data) {
-      println(item.toString())
-
       var timeText = item.at("/created_at").asText()
 
       val record = new IncidentRecord {
@@ -70,9 +68,20 @@ object Program {
       }
     }
 
-    for (record <- records) {
-      val text = record.message
+    val fw = new FileWriter(dataPath + "/log.txt")
+    try {
+      for (record <- records) {
+        val text = record.message.replace("\r", "").replace("\n", "").replace("\t", "  ").replace("\"", "\\\"")
+
+        val message = "{\"@timestamp\":\"%s\",\"message\":%s,\"source\":\"StatusPage\",\"version\":\"2\"}\r\n".format(
+          record.time.toString("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"), text)
+
+        fw.write(message)
+      }
     }
+    finally fw.close()
+
+    println("%s: shipped data successfully ({%d} records)".format(DateTime.now(), records.size))
   }
 
   def getLastRecord(): IncidentRecord = {
