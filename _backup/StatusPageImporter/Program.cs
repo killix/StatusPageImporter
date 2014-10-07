@@ -62,7 +62,7 @@ namespace StatusPageImporter
 			foreach (var record in records)
 			{
 				var text = record.Message;
-				text = text.Replace("\r", "").Replace("\n", "").Replace("\t", "  ");
+				text = text.Replace("\r", "").Replace("\n", "").Replace("\t", "  ").Replace("\"", "\\\"");
 
 				var message = String.Format(
 					"{{\"@timestamp\":\"{0}\",\"message\":{1},\"source\":\"StatusPage\",\"version\":\"2\"}}\r\n",
