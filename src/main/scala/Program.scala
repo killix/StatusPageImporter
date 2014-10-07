@@ -23,7 +23,7 @@ object Program {
   }
 
   def Init(): String = {
-    var dataPath = new File(".").getCanonicalPath() + "\\_data"
+    val dataPath = new File(".").getCanonicalPath() + "\\_data"
 
     val dataDir = new File(dataPath)
     if (!dataDir.exists())
@@ -39,7 +39,7 @@ object Program {
   def ShipData() = {
     val dataPath = Init()
 
-    var lastShippedRecord = getLastRecord()
+    val lastShippedRecord = getLastRecord()
 
     val url = Settings.statusPageBaseUrl + "incidents.json?api_key=" + Settings.statusPageApiKey
 
@@ -85,8 +85,9 @@ object Program {
   }
 
   def getLastRecord(): IncidentRecord = {
-    var endTime = new DateTime().withZone(DateTimeZone.UTC)
-    var startTime = endTime.minusDays(30)
+    val endTime = new DateTime().withZone(DateTimeZone.UTC)
+    val startTime = endTime.minusDays(30)
+
     var curDay = endTime.withTime(0, 0, 0, 0)
 
     while (curDay.isAfter(startTime))
