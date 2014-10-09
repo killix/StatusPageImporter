@@ -11,14 +11,14 @@ import scalaj.http.{HttpOptions, Http}
 object Program {
   def main(args: Array[String]): Unit = {
     try {
-      ShipData()
+      ReportData()
     }
     catch {
       case exc: Exception => println(exc.toString())
     }
   }
 
-  def ShipData() = {
+  def ReportData() = {
     val url = Settings.statusPageBaseUrl + "incidents.json?api_key=" + Settings.statusPageApiKey
 
     val result = Http.get(url)
