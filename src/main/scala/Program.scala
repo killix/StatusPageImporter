@@ -10,35 +10,15 @@ import scalaj.http.{HttpOptions, Http}
 
 object Program {
   def main(args: Array[String]): Unit = {
-    while (true) {
-      try {
-        ShipData()
-      }
-      catch {
-        case exc: Exception => println(exc.toString())
-      }
-
-      Thread.sleep(10 * 60 * 1000)
+    try {
+      ShipData()
     }
-  }
-
-  def Init(): String = {
-    val dataPath = new File(".").getCanonicalPath() + "\\_data"
-
-    val dataDir = new File(dataPath)
-    if (!dataDir.exists())
-      dataDir.mkdir()
-
-    for (file <- dataDir.listFiles().filter(_.isFile)) {
-      file.delete()
+    catch {
+      case exc: Exception => println(exc.toString())
     }
-
-    return dataPath
   }
 
   def ShipData() = {
-    val dataPath = Init()
-
     val url = Settings.statusPageBaseUrl + "incidents.json?api_key=" + Settings.statusPageApiKey
 
     val result = Http.get(url)
