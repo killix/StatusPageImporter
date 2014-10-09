@@ -39,8 +39,6 @@ object Program {
   def ShipData() = {
     val dataPath = Init()
 
-    val lastShippedRecord = getLastRecord()
-
     val url = Settings.statusPageBaseUrl + "incidents.json?api_key=" + Settings.statusPageApiKey
 
     val result = Http.get(url)
@@ -63,9 +61,7 @@ object Program {
         message = item.toString()
       }
 
-      if (lastShippedRecord == null || record.time.isAfter(lastShippedRecord.time)) {
-        records += record
-      }
+      records += record
     }
 
     val fw = new FileWriter(dataPath + "/log.txt")
@@ -82,25 +78,5 @@ object Program {
     finally fw.close()
 
     println("%s: shipped data successfully ({%d} records)".format(DateTime.now(), records.size))
-  }
-
-  def getLastRecord(): IncidentRecord = {
-    val endTime = new DateTime().withZone(DateTimeZone.UTC)
-    val startTime = endTime.minusDays(30)
-
-    var curDay = endTime.withTime(0, 0, 0, 0)
-
-    while (curDay.isAfter(startTime))
-    {
-      val indexName = EsUtil.getIndexName(curDay)
-
-      val records = EsUtil.getRecords(indexName)
-      if (records.size > 0)
-        return records.last
-
-      curDay = curDay.minusDays(1)
-    }
-
-    return null
   }
 }
