@@ -1,7 +1,8 @@
 import java.io.{FileWriter, File}
 import java.net.HttpURLConnection
 
-import org.joda.time.{DateTimeZone, DateTime}
+import org.joda.time.format.PeriodFormatterBuilder
+import org.joda.time.{Duration, DateTimeZone, DateTime}
 import play.libs.Json
 
 import scala.collection.JavaConversions._
@@ -30,33 +31,55 @@ object Program {
 
     val responseText = result.asString
 
-    val records = ArrayBuffer[IncidentRecord]()
-
     val data = Json.parse(responseText)
     for (item <- data) {
-      var timeText = item.at("/created_at").asText()
+      val name = item.at("/name").asText()
+      val createdAtText = item.at("/created_at").asText()
+      val resolvedAtText = normalize(item.at("/resolved_at").asText())
+      val link = item.at("/shortlink").asText()
 
-      val record = new IncidentRecord {
-        time = DateTime.parse(timeText)
-        message = item.toString()
+      val createdAt = DateTime.parse(createdAtText)
+
+      val duration = {
+        if (resolvedAtText == null)
+          null
+        else {
+          val resolvedAt = DateTime.parse(resolvedAtText)
+          new Duration(createdAt, resolvedAt)
+        }
       }
 
-      records += record
-    }
-
-    val fw = new FileWriter(dataPath + "/log.txt")
-    try {
-      for (record <- records) {
-        val text = record.message.replace("\r", "").replace("\n", "").replace("\t", "  ").replace("\"", "\\\"")
-
-        val message = "{\"@timestamp\":\"%s\",\"message\":%s,\"source\":\"StatusPage\",\"version\":\"2\"}\r\n".format(
-          record.time.toString("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"), text)
-
-        fw.write(message)
+      val durationText =
+      {
+        if (duration == null)
+          "null"
+        else
+          duration.toPeriod().toString(new PeriodFormatterBuilder()
+            .printZeroAlways()
+            .appendHours()
+            .appendSeparator(":")
+            .appendMinutes()
+            .appendSeparator(":")
+            .appendSeconds()
+            .toFormatter())
       }
-    }
-    finally fw.close()
 
-    println("%s: shipped data successfully ({%d} records)".format(DateTime.now(), records.size))
+      val durationInSec = {
+        if (duration == null)
+          null
+        else
+          duration.toStandardSeconds.getSeconds
+      }
+
+      val message = "\"%s\",%s,%s,%d,%s,%s".format(name, createdAtText, resolvedAtText, durationInSec, durationText, link)
+      println(message)
+    }
+  }
+
+  def normalize(text: String) = {
+    if (text == "null")
+      null
+    else
+      text
   }
 }
